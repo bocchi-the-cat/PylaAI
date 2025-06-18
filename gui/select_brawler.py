@@ -20,9 +20,12 @@ class SelectBrawler:
         self.app = ctk.CTk()
 
         square_size = int(75 * scale_factor)
+        amount_of_rows = len(brawlers)//10 + 1
+        necessary_height = (int(145 * scale_factor) + amount_of_rows*square_size + (amount_of_rows-1)*int(5 * scale_factor))
         self.app.title(f"PylaAI v{pyla_version}")
-        self.app.geometry(
-            f"{str(int(860 * scale_factor))}x{str(int(860 * scale_factor))}+{str(int(500 * scale_factor))}")
+        self.brawlers = brawlers
+
+        self.app.geometry(f"{str(int(860 * scale_factor))}x{necessary_height}+{str(int(600 * scale_factor))}")
         self.data_setter = data_setter
         self.colors = {
             'gray': "#7d7777",
@@ -38,7 +41,7 @@ class SelectBrawler:
 
         self.app.configure(fg_color=self.colors['ui box gray'])
 
-        self.brawlers = brawlers
+
 
         self.images = []
         self.brawlers_data = []
@@ -73,8 +76,7 @@ class SelectBrawler:
                       text_color="white",
                       font=("Comic sans MS", int(25 * scale_factor)), border_color=self.colors['cherry red'],
                       border_width=int(2 * scale_factor)).place(x=int(585 * scale_factor),
-                                                                y=int(800 * scale_factor))
-        print("WARNING MESSAGES SHOULD BE DONE") 
+                                                                y=int((necessary_height-60) * scale_factor))
         self.app.mainloop()
 
     def set_farm_type(self, value):
