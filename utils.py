@@ -46,14 +46,22 @@ class ScreenshotTaker:
         self.camera = camera
 
     def take(self):
-        image = self.camera.grab()
+        try:
+            image = self.camera.grab()
+        except Exception as e:
+            print(f"Error capturing screenshot: {e}")
+            image = None
         if image is not None:
             image = Image.fromarray(image)
 
         while image is None:
-            image = self.camera.grab()
-            if image is not None:
-                image = Image.fromarray(image)
+            try:
+                image = self.camera.grab()
+                if image is not None:
+                    image = Image.fromarray(image)
+            except Exception as e:
+                print(f"Error capturing screenshot: {e}")
+                image = None
         return image
 
 

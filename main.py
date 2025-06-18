@@ -137,7 +137,7 @@ def pyla_main(data):
                     self.Time_management.states['game_start'] = time.time()
 
                 brawler = self.Stage_manager.brawlers_pick_data[0]['brawler']
-                self.Play.main(frame, brawler, self.state)
+                self.Play.main(frame, brawler)
                 c += 1
 
                 # Enforce max IPS if set

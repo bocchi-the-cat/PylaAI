@@ -5,8 +5,9 @@ import time
 import pyautogui
 from shapely import LineString
 from shapely.geometry import Polygon
-
+from state_finder.main import get_state
 from detect import Detect
+from state_finder.main import get_in_game_state
 from utils import load_toml_as_dict, count_hsv_pixels
 
 pyautogui.PAUSE = 0
@@ -469,35 +470,21 @@ class Play(Movement):
 
         return movement
 
-    def main(self, frame, brawler, state):
+    def main(self, frame, brawler):
         current_time = time.time()
         data = self.get_main_data(frame)
         if self.should_detect_walls and current_time - self.time_since_walls_checked > self.walls_treshold:
 
             tile_data = self.get_tile_data(frame)
-            # if state == "match":
-            #
-            #     numpy_frame = numpy.array(frame)
-            #     for class_name, boxes in tile_data.items():
-            #         for box in boxes:
-            #             x1, y1, x2, y2 = box
-            #             color = (0, 255, 0)
-            #             cv2.rectangle(numpy_frame, (x1, y1), (x2, y2), color, 2)
-            #             cv2.putText(numpy_frame, class_name, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-            #     random_random = random.random()*random.random()
-            #     #save image to f"frames/test_{random.random()*random.random()}.png"
-            #     cv2.imwrite(f"frames/test_{random_random}.png", numpy_frame)
 
             walls = self.process_tile_data(tile_data)
-            # if state == "match":
-            #     print(random_random, "walls", walls, "tile_data", tile_data)
+
             self.time_since_walls_checked = current_time
             self.last_walls_data = walls
             data['wall'] = walls
         elif self.keep_walls_in_memory:
             data['wall'] = self.last_walls_data
-            # if state == "match":
-            #     print("memory", self.last_walls_data)
+
 
         data = self.validate_game_data(data)
         self.track_no_detections(data)
@@ -507,9 +494,13 @@ class Play(Movement):
                 pyautogui.keyUp(key)
             self.keys_hold = []
             if current_time - self.time_since_last_proceeding > self.no_detection_proceed_delay:
-                print("haven't detected the player in a while proceeding")
-                pyautogui.press("q")
-                self.time_since_last_proceeding = time.time()
+                current_state = get_state(frame)
+                if current_state != "match":
+                    self.time_since_last_proceeding = current_time
+                else:
+                    print("haven't detected the player in a while proceeding")
+                    pyautogui.press("q")
+                    self.time_since_last_proceeding = time.time()
             return
         self.time_since_last_proceeding = time.time()
         self.is_hypercharge_ready = False
@@ -520,8 +511,7 @@ class Play(Movement):
         if current_time - self.time_since_gadget_checked > self.gadget_treshold:
             self.is_gadget_ready = self.check_if_gadget_ready(frame)
             self.time_since_gadget_checked = current_time
-        if state != "match":
-            self.time_since_last_proceeding = current_time
+
         movement = self.loop(brawler, data, current_time)
 
         if data:
