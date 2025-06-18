@@ -12,7 +12,7 @@ width, height = pyautogui.size()
 width_ratio = width / orig_screen_width
 height_ratio = height / orig_screen_height
 scale_factor = min(width_ratio, height_ratio)
-
+pyla_version = load_toml_as_dict("./cfg/general_config.toml")['pyla_version']
 
 class SelectBrawler:
 
@@ -20,7 +20,7 @@ class SelectBrawler:
         self.app = ctk.CTk()
 
         square_size = int(75 * scale_factor)
-        self.app.title("PylaAI v0.3.2")
+        self.app.title(f"PylaAI v{pyla_version}")
         self.app.geometry(
             f"{str(int(860 * scale_factor))}x{str(int(860 * scale_factor))}+{str(int(500 * scale_factor))}")
         self.data_setter = data_setter
