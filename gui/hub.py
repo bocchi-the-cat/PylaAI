@@ -1,3 +1,5 @@
+import sys
+
 import customtkinter as ctk
 import webbrowser
 import os
@@ -932,7 +934,28 @@ class Hub:
     #  On Start => close window + callback
     # ---------------------------------------------------------------------------------------------
     def _on_start(self):
-        self.app.destroy()
-        print("IGNORE THE FOLLOWING WARNING MESSAGES, IT'S NORMAL AND WE CAN'T DISABLE IT.")
+        # START OF THE DARK MAGIC
+        sys.stdout.flush()
+        o_out, o_err = sys.stdout, sys.stderr
+        fd_out, fd_err = o_out.fileno(), o_err.fileno()
+        saved_out, saved_err = os.dup(fd_out), os.dup(fd_err)
+        dn = os.open(os.devnull, os.O_RDWR)
+        os.dup2(dn, fd_out)
+        os.dup2(dn, fd_err)
+        os.close(dn)
+
+        try:
+            self.app.destroy()
+        except Exception:
+            pass
+
+        os.dup2(saved_out, fd_out)
+        os.dup2(saved_err, fd_err)
+        os.close(saved_out)
+        os.close(saved_err)
+        sys.stdout, sys.stderr = o_out, o_err
+
         if callable(self.on_close_callback):
             self.on_close_callback()
+        # END OF THE DARK MAGIC
+
