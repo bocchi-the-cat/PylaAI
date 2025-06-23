@@ -23,3 +23,6 @@ Devs :
 
 # If you want to contribute, don't hesitate to create an Issue, a Pull Request, or/and make a ticket on the Pyla discord server at :
 https://discord.gg/xUusk3fw4A
+
+Don't know what to do ? Check the To-Fix and Idea lists :
+https://trello.com/b/SAz9J6AA/public-pyla-trello
