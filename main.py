@@ -190,12 +190,12 @@ if api_base_url != "localhost":
             "New Wall detection model found, downloading... (this might take a few minutes depending on your internet speed)")
         get_latest_wall_model_file()
 
+# check if the zoom is 100%
 user32 = ctypes.windll.user32
-user32.SetProcessDPIAware()  # Makes sure the process is DPI aware
+user32.SetProcessDPIAware()
 dpi_scale = int(user32.GetDpiForSystem())
 if dpi_scale != 96:
-    print(
-        "⚠️⚠️⚠️ Warning ⚠️⚠️⚠️\nScreen's zoom isn't 100%. \nPlease change your Zoom to 100% in your windows settings (just above the display resolution). \nOtherwise there will be unexpected problems (don't hesitate to ask for support in the discord server.")
+    print("⚠️⚠️⚠️ Warning ⚠️⚠️⚠️\nScreen's zoom isn't 100%. \nPlease change your Zoom to 100% in your windows settings (just above the display resolution). \nOtherwise there will be unexpected problems (don't hesitate to ask for support in the discord server.")
 
 # Use the smaller ratio to maintain aspect ratio
 scale_factor = min(width_ratio, height_ratio)

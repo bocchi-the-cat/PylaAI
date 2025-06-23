@@ -94,7 +94,7 @@ def get_in_game_state(image):
     if count_hsv_pixels(image, (0, 0, 255), (0, 0, 255)) > 200000:
         return "play_store"
 
-    if not is_template_in_region(image, path + "brawl_stars_icon.PNG", region_data['brawl_stars_icon']) and check_brawl_stars_crashed == "yes" or check_brawl_stars_crashed == "true":
+    if not is_template_in_region(image, path + "brawl_stars_icon.PNG", region_data['brawl_stars_icon']) and (check_brawl_stars_crashed == "yes" or check_brawl_stars_crashed == "true"):
         return "brawl_stars_crashed"
 
     if is_in_brawl_pass(image) or is_in_star_road(image):

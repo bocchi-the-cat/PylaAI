@@ -51,6 +51,8 @@ class LobbyAutomation:
                 orig_key = key
                 for symbol in [' ', '-', '.', "&"]:
                     key = key.replace(symbol, "")
+                if key == "shey":
+                    key = "shelly"
                 reworked_results[key] = results[orig_key]
             if debug:
                 print("All detected text while looking for brawler name:", reworked_results.keys())

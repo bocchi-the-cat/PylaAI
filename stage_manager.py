@@ -1,3 +1,5 @@
+import os.path
+
 import asyncio
 import time
 from queue import Empty
@@ -10,7 +12,8 @@ import requests
 from lobby_automation import LobbyAutomation
 from state_finder.main import get_state
 from trophy_observer import TrophyObserver
-from utils import find_template_center, extract_text_and_positions, load_toml_as_dict, async_notify_user
+from utils import find_template_center, extract_text_and_positions, load_toml_as_dict, async_notify_user, \
+    save_brawler_data
 
 user_id = load_toml_as_dict("cfg/general_config.toml")['discord_id']
 debug = load_toml_as_dict("cfg/general_config.toml")['super_debug'] == "yes"
@@ -136,7 +139,6 @@ class StageManager:
             self.Trophy_observer.win_streak = self.brawlers_pick_data[0]['win_streak']
             next_brawler_name = self.brawlers_pick_data[0]['brawler']
             if self.brawlers_pick_data[0]["automatically_pick"]:
-                self.Lobby_automation.select_brawler(next_brawler_name)
                 if debug: print("Picking next automatically picked brawler")
                 try:
                     screenshot = self.frame_queue.get(timeout=1)
@@ -176,12 +178,12 @@ class StageManager:
 
     def end_game(self):
         screenshot = self.Screenshot.take()
-        # save image to file
-        # screenshot.save("end_game.png")
+
         found_game_result = False
         current_state = get_state(screenshot)
         while current_state == "end":
             if not found_game_result and time.time() - self.time_since_last_stat_change > 10:
+
                 # will return True if updates trophies, trophies are updated inside Trophy observer
                 found_game_result = self.Trophy_observer.find_game_result(screenshot, current_brawler=self.brawlers_pick_data[0]['brawler'])
                 self.time_since_last_stat_change = time.time()
@@ -189,12 +191,18 @@ class StageManager:
                     "trophies": self.Trophy_observer.current_trophies,
                     "mastery": self.Trophy_observer.current_mastery
                 }
-                value = values[self.brawlers_pick_data[0]['type']]
-                if value == "" and self.brawlers_pick_data[0]['type'] == "mastery":
-                    value = -99999
+                type_to_push = self.brawlers_pick_data[0]['type']
+                value = values[type_to_push]
+                self.brawlers_pick_data[0][type_to_push] = value
+                save_brawler_data(self.brawlers_pick_data)
                 push_current_brawler_till = self.brawlers_pick_data[0]['push_until']
-                if push_current_brawler_till == "" and self.brawlers_pick_data[0]['type'] == "mastery":
+
+                # things so to have mastery be farmed infinitely if no initial or target mastery value are set
+                if value == "" and type_to_push == "mastery":
+                    value = -99999
+                if push_current_brawler_till == "" and type_to_push == "mastery":
                     push_current_brawler_till = 99999
+
                 if value >= push_current_brawler_till:
                     if len(self.brawlers_pick_data) <= 1:
                         print(
@@ -205,6 +213,8 @@ class StageManager:
                         screenshot = self.Screenshot.take()
                         loop.run_until_complete(async_notify_user("completed", screenshot))
                         loop.close()
+                        if os.path.exists("latest_brawler_data.json"):
+                            os.remove("latest_brawler_data.json")
                         time.sleep(10 ** 5)
                         return
             pyautogui.press("q")
@@ -235,7 +245,3 @@ class StageManager:
             return
         self.states[state]()
 
-# camera = dxcam.create()
-# state_manager = StageManager(ScreenshotTaker(camera), [['colt', 500]])
-# screenshot = Image.open("image.png")
-# state_manager.start_game(screenshot)

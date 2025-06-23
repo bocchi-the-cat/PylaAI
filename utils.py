@@ -3,7 +3,7 @@ import io
 import os
 from io import BytesIO
 import ctypes
-
+import json
 import aiohttp
 import requests
 import toml
@@ -71,6 +71,14 @@ def count_hsv_pixels(pil_image, low_hsv, high_hsv):
     mask = cv2.inRange(hsv_image, np.array(low_hsv), np.array(high_hsv))
     pixel_count = np.count_nonzero(mask)
     return pixel_count
+
+def save_brawler_data(data):
+    """
+    Save the given data to a json file. As a list of dictionaries.
+    """
+    with open("latest_brawler_data.json", 'w') as f:
+        json.dump(data, f, indent=4)
+
 
 
 def find_template_center(main_img, template):

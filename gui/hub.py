@@ -934,7 +934,6 @@ class Hub:
     #  On Start => close window + callback
     # ---------------------------------------------------------------------------------------------
     def _on_start(self):
-        print("hello")
         sys.stdout.flush()
         o_out, o_err = sys.stdout, sys.stderr
         fd_out, fd_err = o_out.fileno(), o_err.fileno()

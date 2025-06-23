@@ -1,3 +1,4 @@
+import json
 import tkinter as tk
 
 import customtkinter as ctk
@@ -5,6 +6,7 @@ import pyautogui
 from PIL import Image
 from customtkinter import CTkImage
 from utils import load_toml_as_dict
+from tkinter import filedialog
 
 debug = load_toml_as_dict("cfg/general_config.toml")['super_debug'] == "yes"
 orig_screen_width, orig_screen_height = 1920, 1080
@@ -70,12 +72,16 @@ class SelectBrawler:
         self.image_frame = ctk.CTkFrame(self.app, fg_color=self.colors['ui box gray'])
         self.image_frame.place(x=0, y=int(100 * scale_factor))
 
-        # Initial display of all images
         self.update_images("")
         ctk.CTkButton(self.app, text="Start", command=self.start_bot, fg_color=self.colors['ui box gray'],
                       text_color="white",
                       font=("Comic sans MS", int(25 * scale_factor)), border_color=self.colors['cherry red'],
-                      border_width=int(2 * scale_factor)).place(x=int(585 * scale_factor),
+                      border_width=int(2 * scale_factor)).place(x=int(390 * scale_factor), y=int((necessary_height-60) * scale_factor))
+
+        ctk.CTkButton(self.app, text="Load Brawler Config", command=self.load_brawler_config, fg_color=self.colors['ui box gray'],
+                      text_color="white",
+                      font=("Comic sans MS", int(25 * scale_factor)), border_color=self.colors['cherry red'],
+                      border_width=int(2 * scale_factor)).place(x=int(10 * scale_factor),
                                                                 y=int((necessary_height-60) * scale_factor))
         self.app.mainloop()
 
@@ -85,6 +91,30 @@ class SelectBrawler:
     def start_bot(self):
         self.data_setter(self.brawlers_data)
         self.app.destroy()
+
+    def load_brawler_config(self):
+        # open file select dialog to select a json file
+        file_path = filedialog.askopenfilename(
+            title="Select Brawler Config File",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
+        if file_path:
+            try:
+                with open(file_path, 'r') as file:
+                    brawlers_data = json.load(file)
+                    try:
+                        brawlers_data[0]['push_until']
+                        for brawler_data in brawlers_data:
+                            # if we find a brawler that has already reached it's goal, we remove it from the list
+                            push_type = brawler_data["type"]
+                            if brawler_data["push_until"] <= brawler_data[push_type]:
+                                brawlers_data.remove(brawler_data)
+                        self.brawlers_data = brawlers_data
+                        print("Brawler data loaded successfully.")
+                    except Exception as e:
+                        print("Invalid data format. Expected a list of brawler data.", e)
+            except Exception as e:
+                print(f"Error loading brawler data: {e}")
 
     def on_image_click(self, brawler):
         self.open_brawler_entry(brawler)

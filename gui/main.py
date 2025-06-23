@@ -1,6 +1,7 @@
 import os
 import sys
 
+import utils
 from utils import api_base_url
 
 sys.path.append(os.path.abspath('../'))
@@ -31,6 +32,8 @@ class App:
             else:
                 self.hub_menu(pyla_version, get_latest_version())
             self.select_brawler(self.set_data, self.brawlers)
-            capture_thread.start()
-            self.pyla_main(self.brawler_data)
+            if self.brawler_data:
+                capture_thread.start()
+                utils.save_brawler_data(self.brawler_data)
+                self.pyla_main(self.brawler_data)
 
