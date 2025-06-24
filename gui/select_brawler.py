@@ -1,5 +1,6 @@
 import json
 import tkinter as tk
+from math import ceil
 
 import customtkinter as ctk
 import pyautogui
@@ -22,8 +23,8 @@ class SelectBrawler:
         self.app = ctk.CTk()
 
         square_size = int(75 * scale_factor)
-        amount_of_rows = len(brawlers)//10 + 1
-        necessary_height = (int(145 * scale_factor) + amount_of_rows*square_size + (amount_of_rows-1)*int(5 * scale_factor))
+        amount_of_rows = ceil(len(brawlers)/10) + 1
+        necessary_height = (int(145 * scale_factor) + amount_of_rows*square_size + (amount_of_rows-1)*int(3 * scale_factor))
         self.app.title(f"PylaAI v{pyla_version}")
         self.brawlers = brawlers
 
@@ -255,7 +256,7 @@ class SelectBrawler:
             if brawler.startswith(filter_text.lower()):
                 label = ctk.CTkLabel(self.image_frame, image=img_tk, text="")
                 label.bind("<Button-1>", lambda e, b=brawler: self.on_image_click(b))  # Bind click event
-                label.grid(row=row_num, column=col_num, padx=int(5 * scale_factor), pady=int(5 * scale_factor))
+                label.grid(row=row_num, column=col_num, padx=int(5 * scale_factor), pady=int(3 * scale_factor))
 
                 col_num += 1
                 if col_num == 10:  # Move to the next row after 10 columns

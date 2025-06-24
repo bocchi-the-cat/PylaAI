@@ -132,7 +132,7 @@ def get_brawler_list():
                 'hank', 'jacky', 'janet', 'jessie', 'kit', 'larrylawrie', 'leon', 'lily', 'lola', 'lou',
                 'maisie', 'mandy', 'max', 'meg', 'melodie', 'mico', 'mortis', 'mrp', 'nani', 'nita', 'otis',
                 'pam', 'pearl', 'penny', 'piper', 'poco', 'rt', 'rico', 'rosa', 'ruffs', 'sam', 'sandy',
-                'shelly', 'spike', 'sprout', 'squeak', 'stu', 'surge', 'tara', 'tick', 'willow', 'moe', 'kenji', "juju", "shade", "ollie", "meeple", "finx", "lumi"]
+                'shelly', 'spike', 'sprout', 'squeak', 'stu', 'surge', 'tara', 'tick', 'willow', 'moe', 'kenji', "juju", "shade", "ollie", "meeple", "finx", "lumi", "kaze", "jaeyong", "alli"]
     url = f'https://{api_base_url}/get_brawler_list'
     response = requests.post(url)
     if response.status_code == 201:

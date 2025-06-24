@@ -28,7 +28,7 @@ def login(logged_in_setter):
         else:
             result_label.configure(text="Invalid API Key", text_color="red")
 
-    login_data = load_toml_as_dict('../cfg/login.toml')
+    login_data = load_toml_as_dict('./cfg/login.toml')
     auth_key = login_data['key']
     if auth_key:
         if validate_api_key(auth_key):

@@ -2,7 +2,7 @@ import requests
 from utils import api_base_url
 
 def check_user_exists(username):
-    url = f'https://{api_base_url}.pythonanywhere.com/check_user'
+    url = f'https://{api_base_url}/check_user'
 
     params = {'username': username, "API-Key": "apikeyhaha"}
     response = requests.get(url, params=params)
