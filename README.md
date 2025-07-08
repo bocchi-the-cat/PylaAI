@@ -3,6 +3,8 @@
 PylaAI is currently the best external Brawl Stars bot.
 This repository is intended for devs and it's recommended for others to use the official version from the discord.
 
+**Warning :** This is the source-code, which is meant for developpers or people that know how to install python libraries and run python scripts --> The official build is linked in the discord, which is the source-code converted into an exe so you don't need additional knowledge to run the bot. (You will have to go through a linkvertise link)
+
 How to run : 
 - Install python (tested with python 3.11.9)
 - in a cmd in the folder run `pip install -r requirements.txt` to install the necessary libraries. Read Notes if you have a gpu.
