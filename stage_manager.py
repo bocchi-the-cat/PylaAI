@@ -79,6 +79,7 @@ class StageManager:
         self.Trophy_observer = TrophyObserver(brawler_list)
         self.time_since_last_stat_change = time.time()
         self.frame_queue = frame_queue
+        self.long_press_star_drop = load_toml_as_dict("./cfg/general_config.toml")["long_press_star_drop"]
 
     def start_brawl_stars(self, frame):
         data = extract_text_and_positions(np.array(frame))
@@ -174,7 +175,12 @@ class StageManager:
             pyautogui.click(x=x + 50, y=y)
 
     def click_star_drop(self):
-        pyautogui.press("q")
+        if self.long_press_star_drop == "yes":
+            pyautogui.keyDown("q")
+            time.sleep(10)
+            pyautogui.keyUp("q")
+        else:
+            pyautogui.press("q")
 
     def end_game(self):
         screenshot = self.Screenshot.take()

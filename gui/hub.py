@@ -76,6 +76,8 @@ class Hub:
         self.general_config.setdefault("cpu_or_gpu", "auto")
         self.general_config.setdefault("monitor", "0")
         self.general_config.setdefault("mastery_madness", "0")
+        self.general_config.setdefault("long_press_star_drop", "no")
+        self.general_config.setdefault("trophies_multiplier", 1.0)
 
         # -----------------------------------------------------------------------------------------
         # Appearance
@@ -523,7 +525,6 @@ class Hub:
             else:
                 current_config = self.bot_config
                 current_path = self.bot_config_path
-
             var_str = tk.StringVar(value=str(current_config[config_key]))
 
             def on_save(*_):
@@ -594,6 +595,14 @@ class Hub:
             tooltip_text="Enter the number but not the % of the current mastery madness. (for example : 300 for 300%)"
         )
 
+        create_labeled_entry(
+            label_text="Trophies Multiplier:",
+            config_key="trophies_multiplier",
+            convert_func=int,
+            use_general_config=True,
+            tooltip_text="Enter the multiplier for trophies gained per match (for example : 2 for brawl arena)."
+        )
+
         lbl_monitor = ctk.CTkLabel(container, text="Monitor (0=primary)", font=("Arial", S(18)))
         lbl_monitor.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
 
@@ -645,6 +654,29 @@ class Hub:
         gpu_menu.grid(row=row_idx, column=1, padx=S(20), pady=S(10), sticky="w")
         row_idx += 1
 
+        lbl_long_press = ctk.CTkLabel(container, text="Longpress star_drop:", font=("Arial", S(18)))
+        lbl_long_press.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
+        long_press_var = tk.BooleanVar(
+            value=(str(self.general_config["long_press_star_drop"]).lower() in ["yes", "true"])
+        )
+
+        def toggle_long_press_detection():
+            self.general_config["long_press_star_drop"] = "yes" if long_press_var.get() else "no"
+            save_dict_as_toml(self.general_config, self.general_config_path)
+
+        long_press_cb = ctk.CTkCheckBox(
+            container,
+            text="",
+            variable=long_press_var,
+            command=toggle_long_press_detection,
+            fg_color="#AA2A2A",
+            hover_color="#BB3A3A",
+            width=S(30),
+            height=S(30)
+        )
+        long_press_cb.grid(row=row_idx, column=1, sticky="w", padx=S(20), pady=S(10))
+        row_idx += 1
+
         # 5) Brawl Stars Crash Detection (store in general_config)
         lbl_crash = ctk.CTkLabel(container, text="Brawl Stars Crash Detection:", font=("Arial", S(18)))
         lbl_crash.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
@@ -668,7 +700,6 @@ class Hub:
         )
         crash_cb.grid(row=row_idx, column=1, sticky="w", padx=S(20), pady=S(10))
         row_idx += 1
-
 
         # 10) Gadget Detection Pixel Threshold (bot_config)
         create_labeled_entry(
@@ -720,7 +751,6 @@ class Hub:
             use_general_config=True,
             tooltip_text="Maximum Images per second the bot processes. 'auto' means no limit."
         )
-
 
         container.grid_columnconfigure(0, weight=1)
         container.grid_columnconfigure(1, weight=1)

@@ -33,6 +33,7 @@ class TrophyObserver:
         self.crop_region = load_toml_as_dict("./cfg/lobby_config.toml")['lobby']['trophy_observer']
         self.reader = easyocr.Reader(['en'])
         self.mastery_madness_percentage = int(load_toml_as_dict("./cfg/general_config.toml")["mastery_madness"])
+        self.trophies_multiplier = int(load_toml_as_dict("./cfg/general_config.toml")["trophies_multiplier"])
 
     @staticmethod
     def rework_game_result(res_string):
@@ -60,7 +61,7 @@ class TrophyObserver:
     def calc_win_increment(self):
         for max_trophies, gain in self.trophy_win_ranges:
             if float(self.current_trophies) <= float(max_trophies):
-                return gain + self.win_streak_gain()
+                return gain*self.trophies_multiplie + self.win_streak_gain()
 
     def load_history(self, brawler_list):
         loaded_data = {}

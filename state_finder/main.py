@@ -15,6 +15,11 @@ from utils import count_hsv_pixels, load_toml_as_dict
 orig_screen_width, orig_screen_height = 1920, 1080
 
 path = r"./state_finder/images_to_detect/"
+images_with_star_drop = []
+
+for file in os.listdir("./state_finder/images_to_detect"):
+    if "star_drop" in file:
+        images_with_star_drop.append(file)
 # path = r"./images_to_detect/"
 region_data = load_toml_as_dict("./cfg/lobby_config.toml")['template_matching']
 check_brawl_stars_crashed = str(load_toml_as_dict("./cfg/general_config.toml")['check_if_brawl_stars_crashed']).lower()
@@ -136,8 +141,10 @@ def is_in_star_road(image):
 
 
 def is_in_star_drop(image):
-    return is_template_in_region(image, path + "star_drop.png", region_data['star_drop'])
-
+    for image in images_with_star_drop:
+        if is_template_in_region(image, path + image, region_data['star_drop']):
+            return True
+    return False
 
 def get_state(screenshot):
     screenshot = np.array(screenshot)
