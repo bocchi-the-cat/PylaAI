@@ -14,6 +14,7 @@ from easyocr import easyocr
 import cv2
 import numpy as np
 from PIL import Image
+from packaging import version
 
 reader = easyocr.Reader(['en'])  # Assuming English text, you can modify the list to include other languages.
 
@@ -236,7 +237,7 @@ def check_version():
         latest_version = get_latest_version()
         if latest_version:
             current_version = load_toml_as_dict("cfg/general_config.toml").get('pyla_version', '')
-            if current_version != latest_version:
+            if version.parse(current_version) < version.parse(latest_version):
                 print(f"Warning: (ignore if you're using early access) You are not using the latest public version of Pyla. \nCheck the discord for the latest download link.")
         else:
             print("Error, couldn't get the version, please check your internet connection or go ask for help in the discord.")
