@@ -61,7 +61,7 @@ class TrophyObserver:
     def calc_win_increment(self):
         for max_trophies, gain in self.trophy_win_ranges:
             if float(self.current_trophies) <= float(max_trophies):
-                return gain*self.trophies_multiplie + self.win_streak_gain()
+                return gain*self.trophies_multiplier + self.win_streak_gain()
 
     def load_history(self, brawler_list):
         loaded_data = {}

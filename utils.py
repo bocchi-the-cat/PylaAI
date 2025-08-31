@@ -14,6 +14,9 @@ from easyocr import easyocr
 import cv2
 import numpy as np
 from PIL import Image
+from packaging import version
+import bettercam
+import time
 
 reader = easyocr.Reader(['en'])  # Assuming English text, you can modify the list to include other languages.
 
@@ -40,7 +43,7 @@ def extract_text_and_positions(image_path):
     return text_details
 
 
-class ScreenshotTaker:
+class ScreenshotTaker: #breaks if you alt tab, and idk how to fix it
 
     def __init__(self, camera):
         self.camera = camera
@@ -236,7 +239,7 @@ def check_version():
         latest_version = get_latest_version()
         if latest_version:
             current_version = load_toml_as_dict("cfg/general_config.toml").get('pyla_version', '')
-            if current_version != latest_version:
+            if version.parse(current_version) < version.parse(latest_version):
                 print(f"Warning: (ignore if you're using early access) You are not using the latest public version of Pyla. \nCheck the discord for the latest download link.")
         else:
             print("Error, couldn't get the version, please check your internet connection or go ask for help in the discord.")
@@ -343,3 +346,12 @@ def update_wall_model_classes():
             print("Updated the wall model classes.")
     else:
         print("Failed to update the wall model classes, please report this error.")
+
+
+def cprint(text: str, hex_color: str): #omg color!!!
+    try:
+        hex_color = hex_color.lstrip("#")
+        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        print(f"\033[38;2;{r};{g};{b}m{text}\033[0m")
+    except Exception:
+        print(text)

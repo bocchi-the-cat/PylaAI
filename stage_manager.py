@@ -74,6 +74,7 @@ class StageManager:
         self.brawl_stars_icon = load_image("state_finder/images_to_detect/brawl_stars_icon.png")
         self.brawl_stars_icon_big = load_image("state_finder/images_to_detect/brawl_stars_icon_big.png")
         self.mastery_points_icon = load_image("./state_finder/images_to_detect/mastery_points.PNG")
+        self.close_popup_icon = load_image("state_finder/images_to_detect/close_popup.png")
         self.brawlers_pick_data = brawlers_data
         brawler_list = [brawler["brawler"] for brawler in brawlers_data]
         self.Trophy_observer = TrophyObserver(brawler_list)
@@ -243,7 +244,10 @@ class StageManager:
                 pyautogui.click(in_between)
 
     def close_pop_up(self):
-        self.click_coords([(1400, 230), (1700, 153), (1550, 201)], (1780, 140))
+        screenshot = self.Screenshot.take()
+        popup_location = find_template_center(screenshot, self.close_popup_icon)
+        if popup_location:
+            pyautogui.click(popup_location)
 
     def do_state(self, state, data=None):
         if data:

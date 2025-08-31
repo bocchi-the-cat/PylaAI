@@ -141,8 +141,8 @@ def is_in_star_road(image):
 
 
 def is_in_star_drop(image):
-    for image in images_with_star_drop:
-        if is_template_in_region(image, path + image, region_data['star_drop']):
+    for image_filename in images_with_star_drop: #kept getting errors so tried changing from image to image_filename
+        if is_template_in_region(image, path + image_filename, region_data['star_drop']):
             return True
     return False
 
