@@ -9,4 +9,4 @@ monitor = "0"
 mastery_madness = 0
 long_press_star_drop = "yes"
 trophies_multiplier = 1
-run_for_minutes = 1
+run_for_minutes = 0

@@ -21,7 +21,7 @@ from state_finder.main import get_state
 from time_management import TimeManagement
 from utils import ScreenshotTaker, load_toml_as_dict, current_wall_model_is_latest, api_base_url
 from utils import get_brawler_list, update_missing_brawler_ranges, update_icons, check_version, async_notify_user, \
-    update_wall_model_classes, get_latest_wall_model_file, get_latest_version
+    update_wall_model_classes, get_latest_wall_model_file, get_latest_version, cprint
 
 pyla_version = load_toml_as_dict("./cfg/general_config.toml")['pyla_version']
 chosen_monitor = int(load_toml_as_dict("./cfg/general_config.toml")['monitor'])
@@ -121,7 +121,7 @@ def pyla_main(data):
                 print("check for idle!")
                 self.lobby_automator.check_for_idle(frame)
 
-        def main(self):
+        def main(self): #this is for timer to stop after time
             s_time = time.time()
             c = 0
             while True:
@@ -129,16 +129,16 @@ def pyla_main(data):
                 if self.run_for_minutes > 0 and not self.in_cooldown:
                     elapsed_time = (time.time() - self.start_time) / 60
                     if elapsed_time >= self.run_for_minutes:
-                        print(f"Running for {self.run_for_minutes} minutes is over. Starting 3-minute cooldown.")
-                        self.in_cooldown = True
+                        cprint(f"timer is done, {self.run_for_minutes} is over. continuing for 3 minutes if in game", "#AAE5A4")
+                        self.in_cooldown = True # tries to finish game if in game
                         self.cooldown_start_time = time.time()
-                        self.Stage_manager.states['lobby'] = lambda: 0
+                        self.Stage_manager.states['lobby'] = lambda data: 0
 
                 if self.in_cooldown:
                     if time.time() - self.cooldown_start_time >= self.cooldown_duration:
-                        print("Cooldown is over. Stopping the bot.")
+                        cprint("stopping bot fully", "#AAE5A4")
                         break
-                # Reset counter and time every second
+
                 if abs(s_time - time.time()) > 1:
                     print(c, "IPS")
                     s_time = time.time()
