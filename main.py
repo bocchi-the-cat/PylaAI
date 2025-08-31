@@ -70,6 +70,12 @@ def pyla_main(data):
                 self.max_ips = int(load_toml_as_dict("cfg/general_config.toml")['max_ips'])
             except ValueError:
                 self.max_ips = None
+            self.run_for_minutes = int(load_toml_as_dict("cfg/general_config.toml")['run_for_minutes'])
+            self.start_time = time.time()
+            self.time_to_stop = False
+            self.in_cooldown = False
+            self.cooldown_start_time = 0
+            self.cooldown_duration = 3 * 60
 
         def initialize_stage_manager(self):
             self.Stage_manager.Trophy_observer.win_streak = 0
@@ -119,6 +125,19 @@ def pyla_main(data):
             s_time = time.time()
             c = 0
             while True:
+
+                if self.run_for_minutes > 0 and not self.in_cooldown:
+                    elapsed_time = (time.time() - self.start_time) / 60
+                    if elapsed_time >= self.run_for_minutes:
+                        print(f"Running for {self.run_for_minutes} minutes is over. Starting 3-minute cooldown.")
+                        self.in_cooldown = True
+                        self.cooldown_start_time = time.time()
+                        self.Stage_manager.states['lobby'] = lambda: 0
+
+                if self.in_cooldown:
+                    if time.time() - self.cooldown_start_time >= self.cooldown_duration:
+                        print("Cooldown is over. Stopping the bot.")
+                        break
                 # Reset counter and time every second
                 if abs(s_time - time.time()) > 1:
                     print(c, "IPS")

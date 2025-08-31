@@ -1,0 +1,9 @@
+[meeple]
+defeat = 3
+victory = 6
+draw = 7
+
+[total]
+defeat = 0
+victory = 1
+draw = 1
