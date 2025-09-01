@@ -8,6 +8,7 @@ import pyautogui
 from PIL import Image
 import tkinter as tk
 import bettercam
+from CTkColorPicker import CTkColorPicker, AskColor
 from utils import load_toml_as_dict, save_dict_as_toml, get_discord_link
 
 orig_screen_width, orig_screen_height = 1920, 1080
@@ -17,11 +18,32 @@ height_ratio = height / orig_screen_height
 scale_factor = min(width_ratio, height_ratio)
 monitors = [str(e) for e in list(range(len(bettercam.__factory.outputs)))]
 
-
 def S(value):
     """Helper to scale integer sizes based on the user's screen."""
     return int(value * scale_factor)
 
+def initialize_themes_file(path):
+    if not os.path.exists(path):
+        default_themes = {
+            "last_theme": "community",
+            "community": {
+                "text_color": "#FFFFFF",
+                "background_color": "#282c34",
+                "primary_color": "#61afef",
+                "secondary_color": "#c678dd",
+                "accent_color": "#98c379",
+                "border_color": "#abb2bf"
+            },
+            "pylaai": {
+                "text_color": "#FFFFFF",
+                "background_color": "#242424",
+                "primary_color": "#960a00",
+                "secondary_color": "#7d7777",
+                "accent_color": "#cd5c5c",
+                "border_color": "#1c1c1c"
+            }
+        }
+        save_dict_as_toml(default_themes, path)
 
 class Hub:
     """
@@ -39,6 +61,8 @@ class Hub:
         self.correct_zoom = correct_zoom
         self.on_close_callback = on_close_callback
 
+        self.themed_widgets = []
+
         # -----------------------------------------------------------------------------------------
         # Load configs
         # -----------------------------------------------------------------------------------------
@@ -46,11 +70,17 @@ class Hub:
         self.time_tresholds_path = "cfg/time_tresholds.toml"
         self.match_history_path = "cfg/match_history.toml"
         self.general_config_path = "cfg/general_config.toml"
+        self.themes_path = "cfg/themes.toml"
+
+        initialize_themes_file(self.themes_path)
 
         self.bot_config = load_toml_as_dict(self.bot_config_path)
         self.time_tresholds = load_toml_as_dict(self.time_tresholds_path)
         self.match_history = load_toml_as_dict(self.match_history_path)
         self.general_config = load_toml_as_dict(self.general_config_path)
+        self.all_themes = load_toml_as_dict(self.themes_path)
+        self.current_theme_name = self.all_themes.get("last_theme", "community")
+        self.themes = self.all_themes.get(self.current_theme_name, self.all_themes["community"])
 
         # -----------------------------------------------------------------------------------------
         # Defaults
@@ -80,6 +110,8 @@ class Hub:
         self.general_config.setdefault("trophies_multiplier", 1.0)
         self.general_config.setdefault("run_for_minutes", 0)
 
+        
+
         # -----------------------------------------------------------------------------------------
         # Appearance
         # -----------------------------------------------------------------------------------------
@@ -92,6 +124,7 @@ class Hub:
         self.app.title(f"Pyla Hub – {self.version_str}")
         self.app.geometry(f"{S(1000)}x{S(750)}")
         self.app.resizable(False, False)
+        self.app.configure(fg_color=self.themes["background_color"])
 
         # For showing tooltips in Toplevel windows
         self.tooltip_window = None
@@ -103,7 +136,9 @@ class Hub:
             self.app,
             width=S(980),
             height=S(640),
-            corner_radius=S(10)
+            corner_radius=S(10),
+            fg_color=self.themes["background_color"],
+            border_color=self.themes["border_color"]
         )
         self.tabview.pack(pady=S(10), padx=S(10), fill="x", expand=False)
 
@@ -111,12 +146,12 @@ class Hub:
         self.tabview._segmented_button.configure(
             corner_radius=S(10),
             border_width=2,
-            fg_color="#4A4A4A",
-            selected_color="#AA2A2A",
-            selected_hover_color="#BB3A3A",
-            unselected_color="#333333",
-            unselected_hover_color="#555555",
-            text_color="#FFFFFF",
+            fg_color=self.themes["secondary_color"],
+            selected_color=self.themes["primary_color"],
+            selected_hover_color=self.themes["accent_color"],
+            unselected_color=self.themes["secondary_color"],
+            unselected_hover_color=self.themes["accent_color"],
+            text_color=self.themes["text_color"],
             font=("Arial", S(16), "bold"),
             height=S(40)
         )
@@ -126,12 +161,14 @@ class Hub:
         self.tab_additional = self.tabview.add("Additional Settings")
         self.tab_timers = self.tabview.add("Timers")
         self.tab_history = self.tabview.add("Match History")
+        self.tab_themes = self.tabview.add("Themes")
 
         # Init each tab
         self._init_overview_tab()
         self._init_additional_tab()
         self._init_timers_tab()
         self._init_history_tab()
+        self._init_themes_tab()
 
         # Main loop
         self.app.mainloop()
@@ -225,7 +262,8 @@ class Hub:
         label_type = ctk.CTkLabel(
             orientation_frame,
             text="Map Orientation:",
-            font=("Arial", S(20), "bold")
+            font=("Arial", S(20), "bold"),
+            text_color=self.themes["text_color"]
         )
         label_type.pack(side="left", padx=S(15))
 
@@ -241,9 +279,12 @@ class Hub:
             font=("Arial", S(16), "bold"),
             corner_radius=S(6),
             width=S(120),
-            height=S(40)
+            height=S(40),
+            fg_color=self.themes["secondary_color"],
+            text_color=self.themes["text_color"]
         )
         self.btn_type_vertical.pack(side="left", padx=S(10))
+        self.themed_widgets.append(self.btn_type_vertical)
 
         self.btn_type_horizontal = ctk.CTkButton(
             orientation_frame,
@@ -252,16 +293,19 @@ class Hub:
             font=("Arial", S(16), "bold"),
             corner_radius=S(6),
             width=S(120),
-            height=S(40)
+            height=S(40),
+            fg_color=self.themes["secondary_color"],
+            text_color=self.themes["text_color"]
         )
         self.btn_type_horizontal.pack(side="left", padx=S(10))
+        self.themed_widgets.append(self.btn_type_horizontal)
 
         row_ += 1
 
         # -----------------------------------------------------------------
         # 3) Gamemode Selection as rectangular buttons
         # -----------------------------------------------------------------
-        gm_label = ctk.CTkLabel(container, text="Select Gamemode:", font=("Arial", S(20), "bold"))
+        gm_label = ctk.CTkLabel(container, text="Select Gamemode:", font=("Arial", S(20), "bold"), text_color=self.themes["text_color"])
         gm_label.grid(row=row_, column=0, columnspan=2, pady=S(10))
         row_ += 1
 
@@ -296,8 +340,11 @@ class Hub:
                 width=S(150),
                 height=S(40),
                 font=("Arial", S(16), "bold"),
-                state=("disabled" if disabled else "normal")
+                state=("disabled" if disabled else "normal"),
+                fg_color=self.themes["secondary_color"],
+                text_color=self.themes["text_color"]
             )
+            self.themed_widgets.append(btn)
             return btn
 
         # For type=3 (vertical)
@@ -332,9 +379,9 @@ class Hub:
 
             def set_button_color(btn, val):
                 if val == gm_now:
-                    btn.configure(fg_color="#AA2A2A", hover_color="#BB3A3A")
+                    btn.configure(fg_color=self.themes["primary_color"], hover_color=self.themes["accent_color"])
                 else:
-                    btn.configure(fg_color="#333333", hover_color="#BB3A3A")
+                    btn.configure(fg_color=self.themes["secondary_color"], hover_color=self.themes["accent_color"])
 
             # For vertical set
             set_button_color(self.rb_brawlball_3, "brawlball")
@@ -349,11 +396,11 @@ class Hub:
             """Refresh the orientation buttons' color based on self.gamemode_type_var."""
             t = self.gamemode_type_var.get()
             if t == 3:
-                self.btn_type_vertical.configure(fg_color="#AA2A2A", hover_color="#BB3A3A")
-                self.btn_type_horizontal.configure(fg_color="#333333", hover_color="#BB3A3A")
+                self.btn_type_vertical.configure(fg_color=self.themes["primary_color"], hover_color=self.themes["accent_color"])
+                self.btn_type_horizontal.configure(fg_color=self.themes["secondary_color"], hover_color=self.themes["accent_color"])
             else:
-                self.btn_type_vertical.configure(fg_color="#333333", hover_color="#BB3A3A")
-                self.btn_type_horizontal.configure(fg_color="#AA2A2A", hover_color="#BB3A3A")
+                self.btn_type_vertical.configure(fg_color=self.themes["secondary_color"], hover_color=self.themes["accent_color"])
+                self.btn_type_horizontal.configure(fg_color=self.themes["primary_color"], hover_color=self.themes["accent_color"])
 
         self._refresh_orientation_buttons = refresh_orientation_buttons
 
@@ -380,7 +427,7 @@ class Hub:
         # -----------------------------------------------------------------
         # 4) Emulator Selection (3 rectangular buttons)
         # -----------------------------------------------------------------
-        emulator_label = ctk.CTkLabel(container, text="Select Emulator:", font=("Arial", S(20), "bold"))
+        emulator_label = ctk.CTkLabel(container, text="Select Emulator:", font=("Arial", S(20), "bold"), text_color=self.themes["text_color"])
         emulator_label.grid(row=row_, column=0, columnspan=2, pady=S(10))
         row_ += 1
 
@@ -412,8 +459,11 @@ class Hub:
                 corner_radius=S(6),
                 width=S(150),
                 height=S(40),
-                font=("Arial", S(16), "bold")
+                font=("Arial", S(16), "bold"),
+                fg_color=self.themes["secondary_color"],
+                text_color=self.themes["text_color"]
             )
+            self.themed_widgets.append(btn)
             return btn
 
         self.btn_ldplayer = create_emu_button(self.emulator_frame, "LDPlayer")
@@ -429,14 +479,15 @@ class Hub:
 
             def color(btn, val):
                 if val == curr_emu:
-                    btn.configure(fg_color="#AA2A2A", hover_color="#BB3A3A")
+                    btn.configure(fg_color=self.themes["primary_color"], hover_color=self.themes["accent_color"])
                 else:
-                    btn.configure(fg_color="#333333", hover_color="#BB3A3A")
+                    btn.configure(fg_color=self.themes["secondary_color"], hover_color=self.themes["accent_color"])
 
             color(self.btn_ldplayer, "LDPlayer")
             color(self.btn_bluestacks, "BlueStacks")
             color(self.btn_others, "Others")
 
+        self.refresh_emu_buttons = refresh_emu_buttons
         refresh_emu_buttons()
 
         # -----------------------------------------------------------------
@@ -450,14 +501,16 @@ class Hub:
         start_button = ctk.CTkButton(
             container,
             text="Start",
-            fg_color="#c0392b",
-            hover_color="#e74c3c",
+            fg_color=self.themes["primary_color"],
+            hover_color=self.themes["accent_color"],
             font=("Arial", S(24), "bold"),
             command=self._on_start,
             width=S(220),
-            height=S(60)
+            height=S(60),
+            text_color=self.themes["text_color"]
         )
         start_button.grid(row=row_, column=0, columnspan=2, padx=S(20), pady=S(30))
+        self.themed_widgets.append(start_button)
         row_ += 1
 
         # -----------------------------------------------------------------
@@ -470,7 +523,7 @@ class Hub:
             disclaim_frame,
             text="Pyla is free and public. Join the Discord -> ",
             font=("Arial", S(16), "bold"),
-            text_color="#FFFFFF"
+            text_color=self.themes["text_color"]
         )
         disclaim_label.pack(side="left")
 
@@ -483,7 +536,7 @@ class Hub:
             disclaim_frame,
             text=discord_link,
             font=("Arial", S(16), "bold"),
-            text_color="#3498db",
+            text_color=self.themes["primary_color"],
             cursor="hand2"
         )
         link_label.pack(side="left")
@@ -516,7 +569,7 @@ class Hub:
                                  use_general_config=False,
                                  tooltip_text=None):
             nonlocal row_idx
-            lbl = ctk.CTkLabel(container, text=label_text, font=("Arial", S(18)))
+            lbl = ctk.CTkLabel(container, text=label_text, font=("Arial", S(18)), text_color=self.themes["text_color"])
             lbl.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
 
             # Decide which dictionary to read/write
@@ -541,7 +594,9 @@ class Hub:
                     var_str.set(str(current_config[config_key]))
 
             entry = ctk.CTkEntry(
-                container, textvariable=var_str, width=S(120), font=("Arial", S(16))
+                container, textvariable=var_str, width=S(120), font=("Arial", S(16)),
+                fg_color=self.themes["secondary_color"], text_color=self.themes["text_color"],
+                border_color=self.themes["border_color"]
             )
             entry.grid(row=row_idx, column=1, sticky="w", padx=S(20), pady=S(10))
             entry.bind("<FocusOut>", on_save)
@@ -612,7 +667,7 @@ class Hub:
             tooltip_text="Set how many minutes the bot should run before stopping automatically. (0 means infinite)"
         )
 
-        lbl_monitor = ctk.CTkLabel(container, text="Monitor (0=primary)", font=("Arial", S(18)))
+        lbl_monitor = ctk.CTkLabel(container, text="Monitor (0=primary)", font=("Arial", S(18)), text_color=self.themes["text_color"])
         lbl_monitor.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
 
         monitor_values = monitors
@@ -628,9 +683,10 @@ class Hub:
             command=on_monitor_change,
             variable=monitor_var,
             font=("Arial", S(16)),
-            fg_color="#AA2A2A",
-            button_color="#AA2A2A",
-            button_hover_color="#BB3A3A",
+            fg_color=self.themes["secondary_color"],
+            button_color=self.themes["primary_color"],
+            button_hover_color=self.themes["accent_color"],
+            text_color=self.themes["text_color"],
             width=S(100),
             height=S(35)
         )
@@ -638,7 +694,7 @@ class Hub:
         row_idx += 1
 
         # 4) CPU/GPU (store in general_config)
-        lbl_gpu = ctk.CTkLabel(container, text="Use GPU (CPU/Auto):", font=("Arial", S(18)))
+        lbl_gpu = ctk.CTkLabel(container, text="Use GPU (CPU/Auto):", font=("Arial", S(18)), text_color=self.themes["text_color"])
         lbl_gpu.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
 
         gpu_values = ["cpu", "auto"]
@@ -654,16 +710,17 @@ class Hub:
             command=on_gpu_change,
             variable=gpu_var,
             font=("Arial", S(16)),
-            fg_color="#AA2A2A",
-            button_color="#AA2A2A",
-            button_hover_color="#BB3A3A",
+            fg_color=self.themes["secondary_color"],
+            button_color=self.themes["primary_color"],
+            button_hover_color=self.themes["accent_color"],
+            text_color=self.themes["text_color"],
             width=S(100),
             height=S(35)
         )
         gpu_menu.grid(row=row_idx, column=1, padx=S(20), pady=S(10), sticky="w")
         row_idx += 1
 
-        lbl_long_press = ctk.CTkLabel(container, text="Longpress star_drop:", font=("Arial", S(18)))
+        lbl_long_press = ctk.CTkLabel(container, text="Longpress star_drop:", font=("Arial", S(18)), text_color=self.themes["text_color"])
         lbl_long_press.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
         long_press_var = tk.BooleanVar(
             value=(str(self.general_config["long_press_star_drop"]).lower() in ["yes", "true"])
@@ -678,8 +735,8 @@ class Hub:
             text="",
             variable=long_press_var,
             command=toggle_long_press_detection,
-            fg_color="#AA2A2A",
-            hover_color="#BB3A3A",
+            fg_color=self.themes["primary_color"],
+            hover_color=self.themes["accent_color"],
             width=S(30),
             height=S(30)
         )
@@ -687,7 +744,7 @@ class Hub:
         row_idx += 1
 
         # 5) Brawl Stars Crash Detection (store in general_config)
-        lbl_crash = ctk.CTkLabel(container, text="Brawl Stars Crash Detection:", font=("Arial", S(18)))
+        lbl_crash = ctk.CTkLabel(container, text="Brawl Stars Crash Detection:", font=("Arial", S(18)), text_color=self.themes["text_color"])
         lbl_crash.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
         crash_var = tk.BooleanVar(
             value=(str(self.general_config["check_if_brawl_stars_crashed"]).lower() in ["yes", "true"])
@@ -702,8 +759,8 @@ class Hub:
             text="",
             variable=crash_var,
             command=toggle_crash_detection,
-            fg_color="#AA2A2A",
-            hover_color="#BB3A3A",
+            fg_color=self.themes["primary_color"],
+            hover_color=self.themes["accent_color"],
             width=S(30),
             height=S(30)
         )
@@ -729,7 +786,7 @@ class Hub:
         )
 
         # 3) Console Debug (store in general_config)
-        lbl_debug = ctk.CTkLabel(container, text="Console Debug:", font=("Arial", S(18)))
+        lbl_debug = ctk.CTkLabel(container, text="Console Debug:", font=("Arial", S(18)), text_color=self.themes["text_color"])
         lbl_debug.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
         debug_var = tk.BooleanVar(
             value=(str(self.general_config["super_debug"]).lower() in ["yes", "true"])
@@ -744,8 +801,8 @@ class Hub:
             text="",
             variable=debug_var,
             command=toggle_debug,
-            fg_color="#AA2A2A",
-            hover_color="#BB3A3A",
+            fg_color=self.themes["primary_color"],
+            hover_color=self.themes["accent_color"],
             width=S(30),
             height=S(30)
         )
@@ -779,7 +836,7 @@ class Hub:
         def create_timer_setting(param_name, label_text, tooltip_text=None, disabled=False):
             nonlocal row_idx
 
-            lbl = ctk.CTkLabel(container, text=label_text, font=("Arial", S(18)))
+            lbl = ctk.CTkLabel(container, text=label_text, font=("Arial", S(18)), text_color=self.themes["text_color"])
             lbl.grid(row=row_idx, column=0, padx=S(20), pady=S(10), sticky="e")
 
             # Frame to hold slider & entry side by side
@@ -796,7 +853,11 @@ class Hub:
                 number_of_steps=99,
                 width=S(200),
                 command=lambda v: on_slider_change(v, val_var, param_name),
-                state=("disabled" if disabled else "normal")
+                state=("disabled" if disabled else "normal"),
+                fg_color=self.themes["secondary_color"],
+                progress_color=self.themes["primary_color"],
+                button_color=self.themes["primary_color"],
+                button_hover_color=self.themes["accent_color"]
             )
             sld.pack(side="left", padx=S(5))
 
@@ -806,7 +867,10 @@ class Hub:
                 textvariable=val_var,
                 width=S(80),
                 font=("Arial", S(16)),
-                state=("disabled" if disabled else "normal")
+                state=("disabled" if disabled else "normal"),
+                fg_color=self.themes["secondary_color"],
+                text_color=self.themes["text_color"],
+                border_color=self.themes["border_color"]
             )
             entry.pack(side="left", padx=S(10))
 
@@ -892,7 +956,9 @@ class Hub:
         frame = self.tab_history
 
         scroll_frame = ctk.CTkScrollableFrame(
-            frame, width=S(900), height=S(600), fg_color="transparent", corner_radius=S(10)
+            frame, width=S(900), height=S(600), fg_color="transparent", corner_radius=S(10),
+            scrollbar_button_color=self.themes["primary_color"],
+            scrollbar_button_hover_color=self.themes["accent_color"]
         )
         scroll_frame.pack(fill="both", expand=True, padx=S(10), pady=S(10))
 
@@ -922,7 +988,9 @@ class Hub:
                 scroll_frame,
                 width=S(200),
                 height=S(220),
-                corner_radius=S(8)
+                corner_radius=S(8),
+                fg_color=self.themes["secondary_color"],
+                border_color=self.themes["border_color"]
             )
             cell_frame.grid(row=row_idx, column=col_idx, padx=S(15), pady=S(15))
 
@@ -935,7 +1003,8 @@ class Hub:
             text_label = ctk.CTkLabel(
                 cell_frame,
                 text=f"{brawler}\n{total_games} games",
-                font=("Arial", S(16), "bold")
+                font=("Arial", S(16), "bold"),
+                text_color=self.themes["text_color"]
             )
             text_label.pack()
 
@@ -968,6 +1037,175 @@ class Hub:
             if col_idx >= max_cols:
                 col_idx = 0
                 row_idx += 1
+
+    # ---------------------------------------------------------------------------------------------
+    #  Themes Tab
+    # ---------------------------------------------------------------------------------------------
+    def _init_themes_tab(self):
+        frame = self.tab_themes
+        container = ctk.CTkFrame(frame, fg_color="transparent")
+        container.pack(expand=True, fill="both")
+
+        # Theme selection dropdown
+        theme_names = [theme for theme in self.all_themes if theme != "last_theme"]
+        self.theme_var = tk.StringVar(value=self.current_theme_name)
+
+        self.theme_menu = ctk.CTkOptionMenu(
+            container,
+            values=theme_names,
+            command=self.switch_theme,
+            variable=self.theme_var,
+            font=("Arial", S(16)),
+            fg_color=self.themes["secondary_color"],
+            button_color=self.themes["primary_color"],
+            button_hover_color=self.themes["accent_color"],
+            text_color=self.themes["text_color"],
+            width=S(200),
+            height=S(35)
+        )
+        self.theme_menu.pack(pady=S(20))
+
+        # Color pickers
+        self.color_pickers_frame = ctk.CTkFrame(container, fg_color="transparent")
+        self.color_pickers_frame.pack(expand=True, fill="both")
+        self.create_color_pickers()
+
+        # Theme management buttons
+        self.management_frame = ctk.CTkFrame(container, fg_color="transparent")
+        self.management_frame.pack(pady=S(20))
+
+        create_button = ctk.CTkButton(self.management_frame, text="Create", command=self.create_theme)
+        create_button.pack(side="left", padx=S(10))
+
+        rename_button = ctk.CTkButton(self.management_frame, text="Rename", command=self.rename_theme)
+        rename_button.pack(side="left", padx=S(10))
+
+        delete_button = ctk.CTkButton(self.management_frame, text="Delete", command=self.delete_theme)
+        delete_button.pack(side="left", padx=S(10))
+
+    def create_color_pickers(self):
+        # Clear old pickers
+        for widget in self.color_pickers_frame.winfo_children():
+            widget.destroy()
+
+        row_idx = 0
+
+        def create_color_picker(label_text, config_key):
+            nonlocal row_idx
+            lbl = ctk.CTkLabel(self.color_pickers_frame, text=label_text, font=("Arial", S(18)))
+            lbl.grid(row=row_idx, column=0, sticky="e", padx=S(20), pady=S(10))
+
+            def update_color(color):
+                if self.current_theme_name in ["community", "pylaai"]:
+                    return  # Don't allow editing default themes
+
+                if color:
+                    self.themes[config_key] = color
+                    self.all_themes[self.current_theme_name] = self.themes
+                    save_dict_as_toml(self.all_themes, self.themes_path)
+                    self.update_theme()
+                    # Update the color picker button color
+                    btn.configure(fg_color=color)
+                    # Update the hex entry
+                    hex_entry_var.set(color)
+
+            def open_color_picker():
+                picker = AskColor(initial_color=self.themes.get(config_key, "#000000"))
+                color = picker.get()
+                update_color(color)
+
+            btn = ctk.CTkButton(
+                self.color_pickers_frame,
+                text="Choose Color",
+                command=open_color_picker,
+                fg_color=self.themes.get(config_key, "#000000"),
+                width=S(120),
+                font=("Arial", S(16))
+            )
+            btn.grid(row=row_idx, column=1, sticky="w", padx=S(20), pady=S(10))
+
+            hex_entry_var = tk.StringVar(value=self.themes.get(config_key, "#000000"))
+            hex_entry = ctk.CTkEntry(
+                self.color_pickers_frame,
+                textvariable=hex_entry_var,
+                width=S(100),
+                font=("Arial", S(16))
+            )
+            hex_entry.grid(row=row_idx, column=2, sticky="w", padx=S(10), pady=S(10))
+
+            def hex_entry_callback(event):
+                update_color(hex_entry_var.get())
+
+            hex_entry.bind("<Return>", hex_entry_callback)
+
+            row_idx += 1
+
+        for key in self.all_themes["community"]:
+            create_color_picker(key.replace("_", " ").title(), key)
+
+    def switch_theme(self, theme_name):
+        self.current_theme_name = theme_name
+        self.themes = self.all_themes.get(self.current_theme_name, self.all_themes["community"])
+        self.all_themes["last_theme"] = self.current_theme_name
+        save_dict_as_toml(self.all_themes, self.themes_path)
+        self.update_theme()
+        self.create_color_pickers()
+
+        if self.current_theme_name in ["community", "pylaai"]:
+            self.color_pickers_frame.pack_forget()
+        else:
+            self.color_pickers_frame.pack(expand=True, fill="both")
+
+    def create_theme(self):
+        dialog = ctk.CTkInputDialog(text="Enter new theme name:", title="Create Theme")
+        new_theme_name = dialog.get_input()
+        if new_theme_name and new_theme_name not in self.all_themes:
+            self.all_themes[new_theme_name] = self.all_themes["community"].copy()
+            save_dict_as_toml(self.all_themes, self.themes_path)
+            self.switch_theme(new_theme_name)
+            self.theme_menu.configure(values=[theme for theme in self.all_themes if theme != "last_theme"])
+            self.theme_menu.set(new_theme_name)
+
+    def rename_theme(self):
+        if self.current_theme_name in ["community", "pylaai"]:
+            return # Can't rename default themes
+
+        dialog = ctk.CTkInputDialog(text="Enter new theme name:", title="Rename Theme")
+        new_theme_name = dialog.get_input()
+        if new_theme_name and new_theme_name not in self.all_themes:
+            self.all_themes[new_theme_name] = self.all_themes.pop(self.current_theme_name)
+            self.current_theme_name = new_theme_name
+            self.all_themes["last_theme"] = self.current_theme_name
+            save_dict_as_toml(self.all_themes, self.themes_path)
+            self.theme_menu.configure(values=[theme for theme in self.all_themes if theme != "last_theme"])
+            self.theme_menu.set(new_theme_name)
+
+    def delete_theme(self):
+        if self.current_theme_name in ["community", "pylaai"]:
+            return # Can't delete default themes
+
+        del self.all_themes[self.current_theme_name]
+        self.switch_theme("community")
+        self.theme_menu.configure(values=[theme for theme in self.all_themes if theme != "last_theme"])
+        self.theme_menu.set("community")
+
+    def update_theme(self):
+        self.app.configure(fg_color=self.themes["background_color"])
+        self.tabview.configure(fg_color=self.themes["background_color"], border_color=self.themes["border_color"])
+        self.tabview._segmented_button.configure(
+            fg_color=self.themes["secondary_color"],
+            selected_color=self.themes["primary_color"],
+            selected_hover_color=self.themes["accent_color"],
+            unselected_color=self.themes["secondary_color"],
+            unselected_hover_color=self.themes["accent_color"],
+            text_color=self.themes["text_color"]
+        )
+        for widget in self.themed_widgets:
+            widget.configure(fg_color=self.themes["secondary_color"], text_color=self.themes["text_color"])
+
+        self._refresh_gamemode_buttons()
+        self._refresh_orientation_buttons()
+        self.refresh_emu_buttons()
 
     # ---------------------------------------------------------------------------------------------
     #  On Start => close window + callback

@@ -7,7 +7,7 @@ import pyautogui
 from PIL import Image
 from customtkinter import CTkImage
 from utils import load_toml_as_dict
-from tkinter import filedialog
+from gui.hub import initialize_themes_file
 
 debug = load_toml_as_dict("cfg/general_config.toml")['super_debug'] == "yes"
 orig_screen_width, orig_screen_height = 1920, 1080
@@ -16,6 +16,10 @@ width_ratio = width / orig_screen_width
 height_ratio = height / orig_screen_height
 scale_factor = min(width_ratio, height_ratio)
 pyla_version = load_toml_as_dict("./cfg/general_config.toml")['pyla_version']
+initialize_themes_file("cfg/themes.toml")
+all_themes = load_toml_as_dict("cfg/themes.toml")
+last_theme = all_themes.get("last_theme", "community")
+themes = all_themes.get(last_theme, all_themes["community"])
 
 class SelectBrawler:
 
@@ -30,19 +34,8 @@ class SelectBrawler:
 
         self.app.geometry(f"{str(int(860 * scale_factor))}x{necessary_height}+{str(int(600 * scale_factor))}")
         self.data_setter = data_setter
-        self.colors = {
-            'gray': "#7d7777",
-            'red': "#cd5c5c",
-            'darker_white': '#c4c4c4',
-            'dark gray': '#1c1c1c',
-            'cherry red': '#960a00',
-            'ui box gray': '#242424',
-            'chess white': '#f0d9b5',
-            'chess brown': '#b58863',
-            'indian red': "#cd5c5c"
-        }
 
-        self.app.configure(fg_color=self.colors['ui box gray'])
+        self.app.configure(fg_color=themes["background_color"])
 
 
 
@@ -62,26 +55,26 @@ class SelectBrawler:
         self.filter_entry = ctk.CTkEntry(
             self.app, textvariable=self.filter_var,
             placeholder_text="Type brawler name...", font=("", int(20 * scale_factor)), width=int(200 * scale_factor),
-            fg_color=self.colors['ui box gray'], border_color=self.colors['cherry red'], text_color="white"
+            fg_color=themes["secondary_color"], border_color=themes["border_color"], text_color=themes["text_color"]
         )
         ctk.CTkLabel(self.app, text="Write brawler", font=("Comic sans MS", int(20 * scale_factor)),
-                     text_color=self.colors['cherry red']).place(x=int(scale_factor * 373), y=int(scale_factor * 20))
+                     text_color=themes["primary_color"]).place(x=int(scale_factor * 373), y=int(scale_factor * 20))
         self.filter_entry.place(x=int(340 * scale_factor), y=int(scale_factor * 52))
         self.filter_var.trace_add("write", lambda *args: self.update_images(self.filter_var.get()))
 
         # Frame to hold the images
-        self.image_frame = ctk.CTkFrame(self.app, fg_color=self.colors['ui box gray'])
+        self.image_frame = ctk.CTkFrame(self.app, fg_color=themes["background_color"])
         self.image_frame.place(x=0, y=int(100 * scale_factor))
 
         self.update_images("")
-        ctk.CTkButton(self.app, text="Start", command=self.start_bot, fg_color=self.colors['ui box gray'],
-                      text_color="white",
-                      font=("Comic sans MS", int(25 * scale_factor)), border_color=self.colors['cherry red'],
+        ctk.CTkButton(self.app, text="Start", command=self.start_bot, fg_color=themes["primary_color"],
+                      text_color=themes["text_color"],
+                      font=("Comic sans MS", int(25 * scale_factor)), border_color=themes["border_color"],
                       border_width=int(2 * scale_factor)).place(x=int(390 * scale_factor), y=int((necessary_height-60) * scale_factor))
 
-        ctk.CTkButton(self.app, text="Load Brawler Config", command=self.load_brawler_config, fg_color=self.colors['ui box gray'],
-                      text_color="white",
-                      font=("Comic sans MS", int(25 * scale_factor)), border_color=self.colors['cherry red'],
+        ctk.CTkButton(self.app, text="Load Brawler Config", command=self.load_brawler_config, fg_color=themes["primary_color"],
+                      text_color=themes["text_color"],
+                      font=("Comic sans MS", int(25 * scale_factor)), border_color=themes["border_color"],
                       border_width=int(2 * scale_factor)).place(x=int(10 * scale_factor),
                                                                 y=int((necessary_height-60) * scale_factor))
         self.app.mainloop()
@@ -122,7 +115,7 @@ class SelectBrawler:
 
     def open_brawler_entry(self, brawler):
         top = ctk.CTkToplevel(self.app)
-        top.configure(fg_color=self.colors['ui box gray'])
+        top.configure(fg_color=themes["background_color"])
         top.geometry(
             f"{str(int(300 * scale_factor))}x{str(int(450 * scale_factor))}+{str(int(1100 * scale_factor))}+{str(int(200 * scale_factor))}")
         top.title("Enter Brawler Data")
@@ -130,32 +123,32 @@ class SelectBrawler:
 
         push_until_var = tk.StringVar()
         push_until_entry = ctk.CTkEntry(
-            top, textvariable=push_until_var, fg_color=self.colors['ui box gray'], text_color="white",
-            border_color=self.colors['cherry red'], border_width=int(2 * scale_factor), height=int(28 * scale_factor)
+            top, textvariable=push_until_var, fg_color=themes["secondary_color"], text_color=themes["text_color"],
+            border_color=themes["border_color"], border_width=int(2 * scale_factor), height=int(28 * scale_factor)
         )
 
         trophies_var = tk.StringVar()
         trophies_entry = ctk.CTkEntry(
-            top, textvariable=trophies_var, fg_color=self.colors['ui box gray'], text_color="white",
-            border_color=self.colors['cherry red'], border_width=int(2 * scale_factor), height=int(28 * scale_factor)
+            top, textvariable=trophies_var, fg_color=themes["secondary_color"], text_color=themes["text_color"],
+            border_color=themes["border_color"], border_width=int(2 * scale_factor), height=int(28 * scale_factor)
         )
 
         mastery_var = tk.StringVar()
         mastery_entry = ctk.CTkEntry(
-            top, textvariable=mastery_var, fg_color=self.colors['ui box gray'], text_color="white",
-            border_color=self.colors['cherry red'], border_width=int(2 * scale_factor), height=int(28 * scale_factor)
+            top, textvariable=mastery_var, fg_color=themes["secondary_color"], text_color=themes["text_color"],
+            border_color=themes["border_color"], border_width=int(2 * scale_factor), height=int(28 * scale_factor)
         )
 
         current_win_streak_var = tk.StringVar(value="0")  # Set the default value to "0"
         current_win_streak_entry = ctk.CTkEntry(
-            top, textvariable=current_win_streak_var, fg_color=self.colors['ui box gray'], text_color="white",
-            border_color=self.colors['cherry red'], border_width=int(2 * scale_factor), height=int(28 * scale_factor)
+            top, textvariable=current_win_streak_var, fg_color=themes["secondary_color"], text_color=themes["text_color"],
+            border_color=themes["border_color"], border_width=int(2 * scale_factor), height=int(28 * scale_factor)
         )
 
         auto_pick_var = tk.BooleanVar(value=True)  # Checkbox variable, ticked by default
         auto_pick_checkbox = ctk.CTkCheckBox(
             top, text="Auto-pick Brawler in game", variable=auto_pick_var,
-            fg_color=self.colors['cherry red'], text_color="white", checkbox_height=int(24 * scale_factor)
+            fg_color=themes["primary_color"], text_color=themes["text_color"], checkbox_height=int(24 * scale_factor)
         )
 
         def submit_data():
@@ -190,48 +183,51 @@ class SelectBrawler:
             top.destroy()
 
         submit_button = ctk.CTkButton(
-            top, text="Submit", command=submit_data, fg_color=self.colors['ui box gray'],
-            border_color=self.colors['cherry red'],
-            text_color="white", border_width=int(2 * scale_factor), width=int(80 * scale_factor)
+            top, text="Submit", command=submit_data, fg_color=themes["primary_color"],
+            border_color=themes["border_color"],
+            text_color=themes["text_color"], border_width=int(2 * scale_factor), width=int(80 * scale_factor)
         )
 
         farm_type_button_frame = ctk.CTkFrame(top, width=int(200 * scale_factor), height=int(50 * scale_factor),
-                                              fg_color=self.colors['ui box gray'])
+                                              fg_color=themes["background_color"])
 
         self.mastery_button = ctk.CTkButton(farm_type_button_frame, text="Mastery", width=int(85 * scale_factor),
                                             command=lambda: self.set_farm_type_color("mastery"),
-                                            hover_color=self.colors['cherry red'],
+                                            hover_color=themes["accent_color"],
                                             font=("", int(15 * scale_factor)),
-                                            fg_color=self.colors["ui box gray"],
-                                            border_color=self.colors['cherry red'],
+                                            fg_color=themes["secondary_color"],
+                                            border_color=themes["border_color"],
+                                            text_color=themes["text_color"],
                                             border_width=int(2 * scale_factor)
                                             )
         self.trophies_button = ctk.CTkButton(farm_type_button_frame, text="Trophies", width=int(85 * scale_factor),
                                              command=lambda: self.set_farm_type_color("trophies"),
-                                             hover_color=self.colors['cherry red'],
+                                             hover_color=themes["accent_color"],
                                              font=("", int(15 * scale_factor)),
-                                             fg_color=self.colors["ui box gray"],
-                                             border_color=self.colors['cherry red'], border_width=int(2 * scale_factor)
+                                             fg_color=themes["secondary_color"],
+                                             border_color=themes["border_color"],
+                                             text_color=themes["text_color"],
+                                             border_width=int(2 * scale_factor)
                                              )
 
         self.trophies_button.place(x=int(10 * scale_factor))
         self.mastery_button.place(x=int(110 * scale_factor))
 
         ctk.CTkLabel(top, text=f"Brawler: {brawler}", font=("Comic sans MS", int(20 * scale_factor)),
-                     text_color=self.colors['red']).pack(
+                     text_color=themes["primary_color"]).pack(
             pady=int(7 * scale_factor))
         farm_type_button_frame.pack()
         ctk.CTkLabel(top, text="Push Until", font=("Comic sans MS", int(15 * scale_factor)),
-                     text_color=self.colors['chess white']).pack()
+                     text_color=themes["text_color"]).pack()
         push_until_entry.pack(pady=int(4 * scale_factor))
         ctk.CTkLabel(top, text="Trophies", font=("Comic sans MS", int(15 * scale_factor)),
-                     text_color=self.colors['chess white']).pack()
+                     text_color=themes["text_color"]).pack()
         trophies_entry.pack(pady=int(4 * scale_factor))
         ctk.CTkLabel(top, text="Mastery", font=("Comic sans MS", int(15 * scale_factor)),
-                     text_color=self.colors['chess white']).pack()
+                     text_color=themes["text_color"]).pack()
         mastery_entry.pack(pady=int(4 * scale_factor))
         ctk.CTkLabel(top, text="Brawler's Win Streak", font=("Comic sans MS", int(15 * scale_factor)),
-                     text_color=self.colors['chess white']).pack()
+                     text_color=themes["text_color"]).pack()
         current_win_streak_entry.pack(pady=int(4 * scale_factor))
         auto_pick_checkbox.pack(pady=int(4 * scale_factor))  # Add the checkbox to the UI
         submit_button.pack(pady=int(7 * scale_factor))
@@ -239,11 +235,11 @@ class SelectBrawler:
     def set_farm_type_color(self, value):
         self.farm_type = value
         if value == "mastery":
-            self.mastery_button.configure(fg_color=self.colors['cherry red'])
-            self.trophies_button.configure(fg_color=self.colors['ui box gray'])
+            self.mastery_button.configure(fg_color=themes["primary_color"])
+            self.trophies_button.configure(fg_color=themes["secondary_color"])
         else:
-            self.mastery_button.configure(fg_color=self.colors['ui box gray'])
-            self.trophies_button.configure(fg_color=self.colors['cherry red'])
+            self.mastery_button.configure(fg_color=themes["secondary_color"])
+            self.trophies_button.configure(fg_color=themes["primary_color"])
 
     def update_images(self, filter_text):
         for widget in self.image_frame.winfo_children():

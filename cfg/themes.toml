@@ -1,0 +1,17 @@
+last_theme = "community"
+
+[community]
+text_color = "#FFFFFF"
+background_color = "#282c34"
+primary_color = "#61afef"
+secondary_color = "#c678dd"
+accent_color = "#98c379"
+border_color = "#abb2bf"
+
+[pylaai]
+text_color = "#FFFFFF"
+background_color = "#242424"
+primary_color = "#960a00"
+secondary_color = "#7d7777"
+accent_color = "#cd5c5c"
+border_color = "#1c1c1c"
