@@ -5,7 +5,7 @@
 [![Trello](https://img.shields.io/badge/Trello-0079BF?logo=trello&logoColor=white)](https://trello.com/b/SAz9J6AA/public-pyla-trello)
 
 > [!WARNING]
-> **Warning**: There are two versions of PylaAI, you are currently browsing the development version for developers. Please visit our [Discord](https://discord.gg/pylaai), which comes as a ready-to-use `.exe`.
+> **Warning**: There are two versions of PylaAI, you are currently browsing the source code for developers. Please visit our [Discord](https://discord.gg/pylaai) to use the compiled version, which comes as a ready-to-use `.exe`.
 
 PylaAI is currently the best external Brawl Stars bot.
 
@@ -22,9 +22,6 @@ PylaAI is currently the best external Brawl Stars bot.
   - Uses **DirectML** acceleration on Windows
   - Works well with integrated graphics
 
-- **Linux / WSL**
-  - Fully optimized for **Ubuntu / WSLg environments**
-
 ## Installation
 
 You will need [Python 3.11.9](https://www.python.org/downloads/release/python-3119/).
@@ -37,7 +34,7 @@ python setup.py install
 
 ### Other Platforms
 
-The official PylaAI does **NOT** support other platforms, but you can visit [Unofficial Ports](https://github.com/4D1-TooFarGone/Pyla-Ports) for cross-platform support.
+The official PylaAI does **NOT** support other platforms such as Linux or Mac, but you can visit [Unofficial Ports](https://github.com/4D1-TooFarGone/Pyla-Ports) for cross-platform support.
 
 ## Using PylaAI
 
@@ -50,11 +47,6 @@ Run the bot:
 python main.py
 ```
 
-See the [DOCS](https://pyla-ai.pages.dev/#docs) for a full guide.
-
-## Contributing
-
-Contributions are welcome. Run `unittest` to check for regressions, and keep your changes consistent with the existing code style.
 
 ## License
 
